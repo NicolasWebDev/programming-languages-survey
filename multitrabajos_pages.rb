@@ -16,24 +16,12 @@ class MultitrabajosPages
     end
   end
 
-  def save_directory
-    File.expand_path("../#{Date.today}", __FILE__)
-  end
-
-  def save_offer offer, index
-    filepath = File.join(save_directory, (index + 1).to_s)
-    File.open(filepath, 'w') { |file| file.write offer.serialize }
-  end
-
-  def save_offers
-    Dir.mkdir save_directory unless File.exist? save_directory
-    offers.each_with_index { |offer, index| save_offer offer, index }
-    puts "\n#{nb_offers} offers have been successfully saved inside"\
-      " #{save_directory}."
-  end
-
-  def nb_offers
-    offers.size
+  def save_offers db
+    offers.each do |offer|
+      db.execute "INSERT INTO offers values (?, 'multitrabajos', date('now'));",
+        offer.serialize
+    end
+    puts "\n#{offers.size} offers have been successfully saved."
   end
 end
 
