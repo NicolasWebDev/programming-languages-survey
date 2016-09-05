@@ -1,5 +1,6 @@
 #! /usr/bin/env ruby
 
+require 'sqlite3'
 require_relative 'keywords'
 
 def build_keywords
@@ -15,10 +16,9 @@ end
 
 keywords = Keywords.new build_keywords
 
-def search_keywords filename, keywords
-  offer = File.read filename
-  keywords.each { |keyword| keyword.find_in offer }
+db = SQLite3::Database.new 'offers.db'
+db.execute 'select offer from offers' do |offer|
+  keywords.each { |keyword| keyword.find_in offer[0] }
 end
 
-Dir.glob("#{File.dirname(__FILE__)}/2016*/[0-9]*") { |filename| search_keywords filename, keywords }
 puts keywords
