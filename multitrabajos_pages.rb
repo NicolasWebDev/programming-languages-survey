@@ -2,13 +2,11 @@ require 'date'
 
 class Page
   class << self
-    attr_accessor :index, :offer_link_selector, :offer_content_selector,
-      :next_page_text
+    attr_accessor :offer_link_selector, :offer_content_selector, :next_page_text
   end
 
   def initialize page
     @page = page
-    @index = self.class.index += 1
   end
 
   def offer_links
@@ -27,27 +25,21 @@ class Page
     next_page ? self.class.new(next_page) : nil
   end
 
-  def to_s
-    "Page ##{index}"
-  end
-
   protected
 
-  attr_reader :page, :index
+  attr_reader :page
 end
 
 class MultitrabajosPage < Page
   @offer_link_selector = 'a.aviso_box'.freeze
   @offer_content_selector = '#contenido_aviso'.freeze
   @next_page_text = 'Siguiente'.freeze
-  @index = 0
 end
 
 class ComputrabajoPage < Page
   @offer_link_selector = 'a.js-o-link'.freeze
   @offer_content_selector = '.detalle_oferta'.freeze
   @next_page_text = 'Siguiente'.freeze
-  @index = 0
 end
 
 class Pages
