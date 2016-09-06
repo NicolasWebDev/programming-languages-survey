@@ -1,12 +1,63 @@
 require 'date'
 
-class MultitrabajosPages
-  include Enumerable
-  attr_reader :offers
+class Page
+  class << self
+    attr_accessor :index, :offer_link_selector, :offer_content_selector,
+      :next_page_text
+  end
 
-  def initialize url
-    @current_page = MultitrabajosPage.new(Mechanize.new.get(url))
+  def initialize page
+    @page = page
+    @index = self.class.index += 1
+  end
+
+  def offer_links
+    page.links_with(css: self.class.offer_link_selector)
+  end
+
+  def offers
+    offer_links.map do |offer_link|
+      print '.'
+      offer_link.click.search(self.class.offer_content_selector).first
+    end
+  end
+
+  def next
+    next_page = page.link_with(text: self.class.next_page_text)&.click
+    next_page ? self.class.new(next_page) : nil
+  end
+
+  def to_s
+    "Page ##{index}"
+  end
+
+  protected
+
+  attr_reader :page, :index
+end
+
+class MultitrabajosPage < Page
+  @offer_link_selector = 'a.aviso_box'.freeze
+  @offer_content_selector = '#contenido_aviso'.freeze
+  @next_page_text = 'Siguiente'.freeze
+  @index = 0
+end
+
+class ComputrabajoPage < Page
+  @offer_link_selector = 'a.js-o-link'.freeze
+  @offer_content_selector = '.detalle_oferta'.freeze
+  @next_page_text = 'Siguiente'.freeze
+  @index = 0
+end
+
+class Pages
+  include Enumerable
+  attr_reader :offers, :name
+
+  def initialize name, page_class, url
+    @current_page = page_class.new(Mechanize.new.get(url))
     @offers = reduce([]) { |a, e| a.concat e.offers }
+    @name = name
   end
 
   def each
@@ -18,46 +69,9 @@ class MultitrabajosPages
 
   def save_offers db
     offers.each do |offer|
-      db.execute "INSERT INTO offers values (?, 'multitrabajos', date('now'));",
-        offer.serialize
+      db.execute "INSERT INTO offers values (?, ?, date('now'));",
+        [offer.serialize, name]
     end
     puts "\n#{offers.size} offers have been successfully saved."
   end
-end
-
-class MultitrabajosPage
-  class << self
-    attr_accessor :index
-  end
-
-  @index = 0
-
-  def initialize page
-    @page = page
-    @index = self.class.index += 1
-  end
-
-  def offer_links
-    page.links_with(css: 'a.aviso_box')
-  end
-
-  def offers
-    offer_links.map do |offer_link|
-      print '.'
-      offer_link.click.search('#contenido_aviso').first
-    end
-  end
-
-  def next
-    next_page = page.link_with(text: 'Siguiente')&.click
-    next_page ? self.class.new(next_page) : nil
-  end
-
-  def to_s
-    "Page ##{index}"
-  end
-
-  private
-
-  attr_reader :page, :index
 end
