@@ -2,7 +2,7 @@
 
 require 'mechanize'
 require 'sqlite3'
-require_relative 'multitrabajos_pages'
+require_relative 'pages'
 
 MULTITRABAJO_URL = 'http://www.multitrabajos.com/'\
   'empleos-area-tecnologia-sistemas-y-telecomunicaciones.html'.freeze
