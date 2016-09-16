@@ -3,7 +3,8 @@
 require 'sqlite3'
 require_relative 'pages'
 
-db = SQLite3::Database.new 'offers.db'
+db_path = File.expand_path '../offers.db', __FILE__
+db = SQLite3::Database.new db_path
 
 Pages.new(
   'multitrabajos', MultitrabajosPage,
