@@ -14,11 +14,16 @@ class Page
     page.links_with(css: self.class.offer_link_selector)
   end
 
+  def find_content offer_link
+    print '.'
+    offer_link.click.search(self.class.offer_content_selector).first
+  rescue StandardError => error
+    puts error.message
+    nil
+  end
+
   def offers
-    offer_links.map do |offer_link|
-      print '.'
-      offer_link.click.search(self.class.offer_content_selector).first
-    end
+    offer_links.map { |offer_link| find_content offer_link }.compact
   end
 
   def next
